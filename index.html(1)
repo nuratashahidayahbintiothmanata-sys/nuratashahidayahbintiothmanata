@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFM: Food Security & Pest Dynamics Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans p-6">
+
+    <div class="max-w-5xl mx-auto space-y-6">
+        
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-700 p-6 rounded-2xl shadow-xl">
+            <span class="bg-emerald-950 text-emerald-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">SFM: Food Security Major</span>
+            <h1 class="text-3xl font-extrabold mt-2">Rice Granary Pest Breeding Derivative Simulator</h1>
+            <p class="text-emerald-100 text-sm mt-1">Utilizing the First Derivative $f'(x)$ to Optimize Biosecurity Interventions and Mitigate Food Loss in Malaysia</p>
+        </div>
+
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-md">
+            <h2 class="text-xl font-bold text-emerald-400 mb-2">📌 Food Security Scenario: Safeguarding National Rice Stockpiles</h2>
+            <p class="text-slate-300 text-sm leading-relaxed">
+                The rice weevil (<span class="italic">Sitophilus oryzae</span>) represents a severe threat to national food security within BERNAS storage warehouses across Malaysia. Left unchecked, their population grows following a **logistic S-shaped curve**. In the field of **Food Security (SFM)**, managing availability and minimizing post-harvest grain losses is critical. 
+                Using calculus, the **First Derivative $f'(x)$** calculates the <span class="font-semibold text-emerald-300">Instantaneous Daily Growth Rate</span> of the pests. Identifying and deploying targeted organic fumigation exactly when the breeding velocity peaks (the Inflection Point) allows food security officers to halt ecological degradation before a catastrophic breach in the supply chain occurs.
+            </p>
+            <div class="mt-3 text-xs text-slate-400 italic">
+                Baseline biological parameters adapted from the Department of Agriculture (DOA) Malaysia & international post-harvest grain storage security standards.
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700 text-center">
+                <span class="text-xs text-slate-400 font-semibold block mb-1">ORIGINAL FUNCTION: PEST POPULATION SIZE</span>
+                <div class="text-lg font-mono text-blue-400 bg-slate-900 p-3 rounded-lg inline-block my-2 w-full">
+                    f(x) = K / (1 + &beta; &middot; e<sup>-k &middot; &eta; &middot; x</sup>)
+                </div>
+                <p class="text-xs text-slate-400 mt-1">Measures total weevil population accumulation on storage day x.</p>
+            </div>
+            <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700 text-center">
+                <span class="text-xs text-slate-400 font-semibold block mb-1">FIRST DERIVATIVE: DAILY BREEDING VELOCITY</span>
+                <div class="text-lg font-mono text-emerald-400 bg-slate-900 p-3 rounded-lg inline-block my-2 w-full">
+                    f'(x) = (K &middot; &beta; &middot; k &middot; &eta; &middot; e<sup>-k&eta;x</sup>) / (1 + &beta;e<sup>-k&eta;x</sup>)<sup>2</sup>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">Measures population growth acceleration (pests generated/day).</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-md">
+            <h2 class="text-lg font-bold mb-4 text-slate-200">📊 Population Trajectory & Growth Velocity Chart</h2>
+            <p class="text-xs text-slate-400 mb-4">Click directly on the chart lines or use the timeline slider below to evaluate calculus parameters dynamically!</p>
+            <div class="relative h-80 w-full mb-4 bg-slate-900 p-4 rounded-xl">
+                <canvas id="growthChart"></canvas>
+            </div>
+            
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-700 space-y-2">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-400 font-medium">Interactive Storage Timeline:</span>
+                    <span id="dayDisplay" class="text-xl font-bold text-emerald-400 bg-slate-800 px-3 py-1 rounded">Day 15</span>
+                </div>
+                <input type="range" id="daySlider" min="0" max="30" value="15" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+            </div>
+        </div>
+
+        <div id="hudSection" class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-800 p-5 rounded-xl border border-emerald-500/30 shadow-lg">
+            <div class="p-3 bg-slate-900 rounded-lg">
+                <span class="text-xs text-slate-400 block font-semibold">TOTAL PEST COUNT f(x)</span>
+                <span id="popValue" class="text-2xl font-black text-blue-400">0 pests</span>
+            </div>
+            <div class="p-3 bg-slate-900 rounded-lg">
+                <span class="text-xs text-slate-400 block font-semibold">BREEDING VELOCITY f'(x)</span>
+                <span id="rateValue" class="text-2xl font-black text-emerald-400">0 pests/day</span>
+            </div>
+            <div class="p-3 bg-slate-900 rounded-lg">
+                <span class="text-xs text-slate-400 block font-semibold">FOOD SECURITY ECO-STATUS</span>
+                <span id="statusValue" class="text-md font-bold block mt-1 text-yellow-400">Monitoring Phase</span>
+            </div>
+        </div>
+
+        <div class="bg-emerald-950/40 border border-emerald-800/60 p-5 rounded-xl">
+            <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wide mb-1">💡 Calculus Insights & Food Security Action (Layman's Terms)</h3>
+            <p id="laymanText" class="text-slate-300 text-sm leading-relaxed">Adjust the timeline slider to view dynamic food security risk analysis.</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Biological Constants for Granary Rice Weevils
+        const K = 2000;      // Carrying Capacity (Maximum sustainable pest population size)
+        const beta = 150;    // Initial scaling constant
+        const k = 0.25;      // Biological growth coefficient of the weevil strain
+        const eta = 1.0;     // Warehouse Microclimate Index (1.0 = Baseline Ambient Humidity)
+
+        // Mathematical Function f(x) - Logistic Curve
+        function fx(x) {
+            return K / (1 + beta * Math.exp(-k * eta * x));
+        }
+
+        // Mathematical Function f'(x) - First Derivative Equation
+        function fPrimeX(x) {
+            const expTerm = Math.exp(-k * eta * x);
+            const numerator = K * beta * (k * eta) * expTerm;
+            const denominator = Math.pow(1 + beta * expTerm, 2);
+            return numerator / denominator;
+        }
+
+        // Generate Dataset Array for Day 0 to 30
+        const labels = [];
+        const dataPopulation = [];
+        const dataRate = [];
+        for (let x = 0; x <= 30; x++) {
+            labels.push(x);
+            dataPopulation.push(fx(x).toFixed(1));
+            dataRate.push(fPrimeX(x).toFixed(1));
+        }
+
+        // Chart.js Canvas Configuration
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        const growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Pest Population f(x) (Count)',
+                        data: dataPopulation,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        yAxisID: 'y',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Growth Rate f\'(x) (Pests/Day)',
+                        data: dataRate,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        yAxisID: 'y1',
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: {
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94a3b8' },
+                        title: { display: true, text: 'Rice Storage Production Timeline (Days)', color: '#94a3b8' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#f1f5f9' } }
+                },
+                onClick: (e) => {
+                    const points = growthChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+                    if (points.length) {
+                        const index = points[0].index;
+                        document.getElementById('daySlider').value = index;
+                        updateMetrics(index);
+                    }
+                }
+            }
+        });
+
+        // Dynamic State Engine to Update HUD Metrics & Descriptions
+        function updateMetrics(day) {
+            document.getElementById('dayDisplay').innerText = `Day ${day}`;
+            
+            const pop = fx(day);
+            const rate = fPrimeX(day);
+            
+            document.getElementById('popValue').innerText = `${Math.round(pop)} pests`;
+            document.getElementById('rateValue').innerText = `${rate.toFixed(1)} pests/day`;
+            
+            let status = "";
+            let layman = "";
+            
+            // Strategic evaluations based on location relative to the Inflection Point (Around Day 20)
+            if (day <= 12) {
+                status = "🟢 SECURE STOCK (Lag Phase)";
+                layman = `On Day ${day}, the weevil population remains low and is multiplying slowly (${rate.toFixed(1)} pests/day). There is minimal immediate risk to national food security. This is the optimal window to clean granary facilities as a preventive biosecurity measure.`;
+            } else if (day > 12 && day <= 22) {
+                status = "🔴 CRITICAL ALERT (Inflection Point)";
+                layman = `Calculus proves that breeding acceleration is at its absolute MAXIMUM (${rate.toFixed(1)} pests/day) due to the steep slope of the logistic curve! If targeted bio-fumigation is not launched IMMEDIATELY, extensive food loss and rice grain structural degradation will occur within 48 hours.`;
+            } else {
+                status = "¼ SEVERE LOSS (Saturation Phase)";
+                layman = `By Day ${day}, the total population has reached severe thresholds (${Math.round(pop)} pests). However, the daily growth rate f'(x) is dropping because the local food source (the rice stockpile) is already heavily compromised and dying off. Food security has been severely breached!`;
+            }
+            
+            document.getElementById('statusValue').innerText = status;
+            document.getElementById('laymanText').innerHTML = layman;
+        }
+
+        // Input Slider Event Trigger
+        const slider = document.getElementById('daySlider');
+        slider.addEventListener('input', (e) => {
+            updateMetrics(parseInt(e.target.value));
+        });
+
+        // Initialize display configuration on load
+        updateMetrics(15);
+    </script>
+</body>
+</html>

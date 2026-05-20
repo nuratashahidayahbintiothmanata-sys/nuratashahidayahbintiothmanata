@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus in Malaysian Food Security: Oil Palm Growth Kinetics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen pb-12">
+
+    <header class="bg-emerald-700 text-white py-8 px-4 shadow-md text-center">
+        <h1 class="text-3xl font-bold md:text-4xl">Application of Derivatives in Food Security</h1>
+        <p class="text-emerald-100 mt-2 text-sm md:text-base">Modeling Oil Palm (*Elaeis guineensis*) Fruit Bunch Development for Optimal Harvest</p>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-semibold text-emerald-800 mb-3">The Bioscience Problem</h2>
+                <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                    In Malaysia, optimizing the Fresh Fruit Bunch (FFB) yield of oil palm is vital for sustainable food security and bio-economy. Harvesting too early results in low oil content, while harvesting too late leads to fruit dropping and rancidity.
+                </p>
+                <p class="text-gray-600 text-sm leading-relaxed">
+                    By monitoring a fruit bunch over its 20-week development cycle, we model its weight accumulation using a <strong>Logistic Growth Function</strong>. The <strong>first derivative $f'(x)$</strong> tells us the exact rate of weight gain per week, pinpointing when the fruit enters its most rapid development phase.
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h2 class="text-xl font-semibold text-emerald-800 mb-3">Mathematical Modeling</h2>
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <span class="block font-medium text-gray-700">Biomass Function $f(x)$:</span>
+                        <code class="block bg-gray-50 p-2 rounded text-emerald-700 font-mono mt-1">f(x) = L / (1 + e^(-k(x - x0)))</code>
+                        <span class="text-xs text-gray-500">Calculates cumulative weight (kg) at week $x$.</span>
+                    </div>
+                    <div>
+                        <span class="block font-medium text-gray-700">First Derivative $f'(x)$ (Growth Rate):</span>
+                        <code class="block bg-gray-50 p-2 rounded text-rose-700 font-mono mt-1">f'(x) = [L * k * e^(-k(x-x0))] / (1 + e^(-k(x-x0)))^2</code>
+                        <span class="text-xs text-gray-500">Calculates the rate of weight gain (kg/week) at week $x$.</span>
+                    </div>
+                    <div class="border-t pt-3 text-xs text-gray-500 space-y-1">
+                        <p><strong>Parameters (Based on MPOB guidelines):</strong></p>
+                        <p>• $L$ (Max Weight) = 25.0 kg</p>
+                        <p>• $k$ (Growth Modifier) = 0.45</p>
+                        <p>• $x_0$ (Inflection Point) = 10.0 weeks</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-xs text-gray-500">
+                <p class="font-semibold mb-1">Data Framework & Reference:</p>
+                <p>Inspired by standard physiological growth curves published by the <em>Malaysian Palm Oil Board (MPOB)</em> via the <strong>"MPOB Palm Oil Yield and Growth Physiology Data Webpage"</strong>.</p>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">Growth Curve & Derivative Visualization</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">Click anywhere on the chart line to analyze a specific week.</p>
+                    </div>
+                    <span class="mt-2 sm:mt-0 px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded">Interactive Mode Active</span>
+                </div>
+                
+                <div class="relative h-80 w-full">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+
+            <div id="analyticsDisplay" class="bg-gradient-to-r from-emerald-800 to-teal-800 text-white p-6 rounded-xl shadow-md transition-all duration-300">
+                <h3 class="text-lg font-semibold border-b border-emerald-600 pb-2 mb-3">🔬 Real-time Field Analysis</h3>
+                <div id="initialMessage" class="text-emerald-100 text-sm py-4 text-center">
+                    Click a data point on the chart above to trigger the derivative calculus analysis for that week.
+                </div>
+                <div id="analysisContent" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-emerald-200 uppercase tracking-wider font-bold">Selected Timeframe</p>
+                        <p class="text-2xl font-black" id="outWeek">Week 0</p>
+                        
+                        <p class="text-xs text-emerald-200 uppercase tracking-wider font-bold mt-3">Cumulative Weight $f(x)$</p>
+                        <p class="text-xl font-bold" id="outWeight">0.00 kg</p>
+                    </div>
+                    <div class="border-t md:border-t-0 md:border-l border-emerald-600 pt-3 md:pt-0 md:pl-4">
+                        <p class="text-xs text-rose-300 uppercase tracking-wider font-bold">Rate of Change $f'(x)$ (Derivative)</p>
+                        <p class="text-2xl font-black text-rose-300" id="outRate">0.00 kg/week</p>
+                        
+                        <p class="text-xs text-emerald-200 uppercase tracking-wider font-bold mt-3">Layman Interpretation</p>
+                        <p class="text-sm text-emerald-500 bg-white rounded p-2 mt-1 font-medium shadow-inner" id="outExpl">Select a point.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Mathematical Constants for Oil Palm Growth Curve
+        const L = 25.0;   // Maximum potential bunch weight (kg)
+        const k = 0.45;   // Growth rate steepness constant
+        const x0 = 10.0;  // Center point of maximum growth velocity (weeks)
+
+        // Generate Data Points for the 20-week cycle
+        const weeks = Array.from({length: 21}, (_, i) => i);
+        
+        // f(x) Logistic Growth function values
+        const weightData = weeks.map(x => {
+            return L / (1 + Math.exp(-k * (x - x0)));
+        });
+
+        // f'(x) First Derivative values
+        const rateData = weeks.map(x => {
+            const expTerm = Math.exp(-k * (x - x0));
+            return (L * k * expTerm) / Math.pow(1 + expTerm, 2);
+        });
+
+        // Setup Chart.js
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        const growthChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: weeks,
+                datasets: [
+                    {
+                        label: 'Bunch Weight f(x) (kg)',
+                        data: weightData,
+                        borderColor: '#047857', // Emerald 700
+                        backgroundColor: 'rgba(4, 120, 87, 0.1)',
+                        yAxisID: 'y',
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointHoverRadius: 7,
+                        tension: 0.2,
+                        fill: true
+                    },
+                    {
+                        label: 'Growth Rate f\'(x) (kg/week)',
+                        data: rateData,
+                        borderColor: '#be123c', // Rose 700
+                        backgroundColor: 'rgba(190, 18, 60, 0.05)',
+                        yAxisID: 'y1',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 3,
+                        tension: 0.2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time (Weeks Since Bunch Anthesis)',
+                            font: { weight: 'bold' }
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Cumulative Biomass (kg)',
+                            font: { weight: 'bold', color: '#047857' }
+                        },
+                        min: 0,
+                        max: 30
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Growth Velocity (kg/week)',
+                            font: { weight: 'bold', color: '#be123c' }
+                        },
+                        min: 0,
+                        max: 4,
+                        grid: {
+                            drawOnChartArea: false // only want the grid lines for one axis
+                        }
+                    }
+                },
+                onClick: (e, activeElements) => {
+                    if (activeElements.length > 0) {
+                        // Get the index of clicked chart item
+                        const dataIndex = activeElements[0].index;
+                        calculateAndDisplay(dataIndex);
+                    }
+                }
+            }
+        });
+
+        // Function to process clicked point data and generate natural language agronomic insight
+        function calculateAndDisplay(idx) {
+            const week = weeks[idx];
+            const currentWeight = weightData[idx];
+            const currentRate = rateData[idx];
+
+            // UI Elements update
+            document.getElementById('initialMessage').classList.add('hidden');
+            document.getElementById('analysisContent').classList.remove('hidden');
+
+            document.getElementById('outWeek').innerText = `Week ${week}`;
+            document.getElementById('outWeight').innerText = `${currentWeight.toFixed(2)} kg`;
+            document.getElementById('outRate').innerText = `+${currentRate.toFixed(2)} kg/week`;
+
+            // Layman explanation engine based on derivative thresholds
+            let laymanExplanation = "";
+            if (week < 6) {
+                laymanExplanation = "Lag Phase: The bunch is in early development. Cell division is occurring, but cumulative mass accumulation and derivative rates are low.";
+            } else if (week >= 6 && week < 10) {
+                laymanExplanation = "Acceleration Phase: The derivative is climbing rapidly! The fruit bunch is actively storing carbohydrates and lipid precursors.";
+            } else if (week === 10) {
+                laymanExplanation = "Inflection Point: The derivative peak! At exactly 2.81 kg/week, this is the maximum biological speed at which this plant can pump nutrients into this bunch.";
+            } else if (week > 10 && week <= 15) {
+                laymanExplanation = "Deceleration Phase: Total weight is still growing, but the growth rate (derivative) is dropping as the bunch reaches physical capacity limits.";
+            } else {
+                laymanExplanation = "Maturity Plateau: The derivative drops near zero. No new weight is being added. Oil synthesis is maximized; optimal harvesting window is open.";
+            }
+
+            document.getElementById('outExpl').innerText = laymanExplanation;
+        }
+    </script>
+</body>
+</html>

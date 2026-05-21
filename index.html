@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus in Food Security: Oil Palm Yield Optimization</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tailwind CSS for clean, rapid layout -->
+    <script src="https://cdn.jsdelivr.net/tailwind" defer></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+        
+        <!-- Header Section -->
+        <div class="bg-emerald-800 text-white p-6 md:p-8">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <span class="bg-emerald-600 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">SFM: Food Security (Malaysia)</span>
+                    <h1 class="text-2xl md:text-3xl font-bold mt-2">Derivatives in Oil Palm Yield Optimization</h1>
+                    <p class="text-emerald-100 text-sm mt-1">Modeling Fresh Fruit Bunch (FFB) Growth to Pinpoint Peak Harvesting Velocity</p>
+                </div>
+                <div class="text-right text-xs text-emerald-200">
+                    <p>Parameters based on: MPOB (Malaysian Palm Oil Board)</p>
+                    <p>Agronomy Standard Yield Data Guidelines</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Panel: Bioscience Problem & Formulas -->
+            <div class="lg:col-span-1 space-y-6">
+                <div>
+                    <h2 class="text-lg font-bold text-emerald-900 border-b pb-2 mb-3">The Bioscience Problem</h2>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        In food security and plantation management, harvesting timing is everything. This tool models the growth of a Malaysian DxP hybrid <strong>Fresh Fruit Bunch (FFB)</strong> over its 20-week development cycle. 
+                    </p>
+                    <p class="text-sm text-gray-600 leading-relaxed mt-2">
+                        While the raw weight curve shows total mass, the <strong>derivative f'(x)</strong> reveals the exact rate of production growth. Tracking this allows estate managers to accurately forecast peak nutrient demand and logistical workforce distribution.
+                    </p>
+                </div>
+
+                <!-- Mathematical Formulas -->
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-4 text-sm">
+                    <div>
+                        <h3 class="font-semibold text-gray-700">1. Raw Bunch Mass Function f(x)</h3>
+                        <div class="bg-white p-2 rounded my-1 font-mono text-center text-xs text-emerald-800 border">
+                            f(x) = L / (1 + e^(-k * (x - x0)))
+                        </div>
+                        <p class="text-xs text-gray-500">Models total bunch weight (kg) at week <em>x</em>.</p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-semibold text-gray-700">2. Growth Rate Derivative f'(x)</h3>
+                        <div class="bg-white p-2 rounded my-1 font-mono text-center text-xs text-red-800 border">
+                            f'(x) = (L * k * e^(-k * (x - x0))) / (1 + e^(-k * (x - x0)))^2
+                        </div>
+                        <p class="text-xs text-gray-500">Calculates instant growth velocity (kg/week) at week <em>x</em>.</p>
+                    </div>
+
+                    <div class="text-xs text-gray-500 border-t pt-2 grid grid-cols-2 gap-1">
+                        <div><strong>Max Cap (L):</strong> 25.0 kg</div>
+                        <div><strong>Growth Coeff (k):</strong> 0.5</div>
+                        <div><strong>Midpoint (x0):</strong> Week 10</div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Click Output Card -->
+                <div id="instruction-prompt" class="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-lg text-center text-sm font-medium animate-pulse">
+                    💡 Click anywhere inside the chart canvas to calculate the real-time derivative at that specific week!
+                </div>
+
+                <div id="output-card" class="hidden bg-emerald-50 border border-emerald-200 p-4 rounded-lg space-y-3 shadow-inner">
+                    <h3 class="font-bold text-emerald-900 text-sm flex justify-between">
+                        <span>Calculated Metrics</span>
+                        <span id="out-week" class="text-emerald-700 font-mono">Week --</span>
+                    </h3>
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <div class="bg-white p-2 rounded border border-emerald-100">
+                            <span class="block text-xs text-gray-500 uppercase">Bunch Weight</span>
+                            <span id="out-weight" class="text-lg font-bold text-gray-800">-- kg</span>
+                        </div>
+                        <div class="bg-white p-2 rounded border border-emerald-100">
+                            <span class="block text-xs text-gray-500 uppercase">Growth Velocity</span>
+                            <span id="out-derivative" class="text-lg font-bold text-emerald-700">-- kg/wk</span>
+                        </div>
+                    </div>
+                    <div class="bg-white p-3 rounded border border-emerald-100 text-xs text-gray-600 leading-relaxed">
+                        <strong>What this means:</strong> <span id="out-layman">Select a coordinate to generate a localized biological interpretation.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: The Chart System -->
+            <div class="lg:col-span-2 flex flex-col justify-between">
+                <div class="relative w-full h-[350px] md:h-[450px]">
+                    <canvas id="yieldChart"></canvas>
+                </div>
+                
+                <div class="mt-4 bg-gray-50 p-3 rounded-lg text-xs text-gray-500 flex justify-between items-center">
+                    <span>💡 <strong>Tip:</strong> Hovering displays exact values. Clicking registers the mathematical point.</span>
+                    <button id="resetAnim" class="bg-emerald-700 text-white px-3 py-1 rounded hover:bg-emerald-800 transition text-xs font-medium">
+                        Replay Entry Animation
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Biological Configurations & Parameters ---
+        const L = 25.0;   // Maximum carrying capacity of FFB clone in kg
+        const k = 0.5;    // Growth acceleration factor
+        const x0 = 10.0;  // Inflection midpoint (Week of max production velocity)
+
+        // --- Math Engine Functions ---
+        // f(x) = Logistic Equation
+        function f(x) {
+            return L / (1 + Math.exp(-k * (x - x0)));
+        }
+
+        // f'(x) = Derivative of Logistic Equation
+        function f_prime(x) {
+            const expTerm = Math.exp(-k * (x - x0));
+            const denominator = Math.pow(1 + expTerm, 2);
+            return (L * k * expTerm) / denominator;
+        }
+
+        // --- Dataset Generation (Weeks 0 to 20 with 0.5 interval steps for smooth curves) ---
+        const labels = [];
+        const weightData = [];
+        const derivativeData = [];
+
+        for (let x = 0; x <= 20; x += 0.5) {
+            labels.push(x);
+            weightData.push(f(x).toFixed(2));
+            derivativeData.push(f_prime(x).toFixed(2));
+        }
+
+        // --- Chart.js Setup and Implementation ---
+        const ctx = document.getElementById('yieldChart').getContext('2d');
+        
+        let yieldChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "f(x): Cumulative FFB Weight (kg)",
+                        data: weightData,
+                        borderColor: '#065f46', // Emerald 800
+                        backgroundColor: 'rgba(6, 95, 70, 0.05)',
+                        borderWidth: 3,
+                        yAxisID: 'yWeight',
+                        tension: 0.2,
+                        pointRadius: 1,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: "f'(x): Growth Rate Velocity (kg/week)",
+                        data: derivativeData,
+                        borderColor: '#991b1b', // Red 800
+                        borderWidth: 2,
+                        borderDash: [4, 4],
+                        backgroundColor: 'transparent',
+                        yAxisID: 'yRate',
+                        tension: 0.2,
+                        pointRadius: 1,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                animations: {
+                    drop: {
+                        type: 'number',
+                        duration: 2200,
+                        easing: 'easeOutQuart',
+                        properties: ['y'],
+                        from: (ctx) => ctx.chart.scales.yWeight.bottom
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Timeline of Development (Weeks since Anthesis)',
+                            color: '#1f2937',
+                            font: { weight: 'bold' }
+                        },
+                        grid: { color: '#f3f4f6' }
+                    },
+                    yWeight: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Total Weight (kg)',
+                            color: '#065f46',
+                            font: { weight: 'bold' }
+                        },
+                        min: 0,
+                        max: 30,
+                        grid: { color: '#e5e7eb' }
+                    },
+                    yRate: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: 'Rate of Change (kg/week)',
+                            color: '#991b1b',
+                            font: { weight: 'bold' }
+                        },
+                        min: 0,
+                        max: 4,
+                        grid: { drawOnChartArea: false } // Avoid cluttering grid lines
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { boxWidth: 20, font: { size: 11 } }
+                    }
+                },
+                onClick: (e, elements, chart) => {
+                    // Custom crosshair intercept finder on user canvas click
+                    const canvasPosition = Chart.helpers.getRelativePosition(e, chart);
+                    const dataX = chart.scales.x.getValueForPixel(canvasPosition.x);
+                    
+                    // Constrain the reading within our active data window array boundaries
+                    const constrainedIndex = Math.max(0, Math.min(labels.length - 1, Math.round(dataX * 2))); 
+                    const targetWeek = labels[constrainedIndex];
+                    
+                    calculatePointMetrics(targetWeek);
+                }
+            }
+        });
+
+        // --- Core Interactivity Engine & Layman Generator ---
+        function calculatePointMetrics(week) {
+            // Un-hide outputs and change states
+            document.getElementById('instruction-prompt').classList.add('hidden');
+            const outputCard = document.getElementById('output-card');
+            outputCard.classList.remove('hidden');
+
+            const currentWeight = f(week);
+            const currentVelocity = f_prime(week);
+
+            // Populate text elements
+            document.getElementById('out-week').innerText = `Week ${week.toFixed(1)}`;
+            document.getElementById('out-weight').innerText = `${currentWeight.toFixed(2)} kg`;
+            document.getElementById('out-derivative').innerText = `${currentVelocity.toFixed(2)} kg/wk`;
+
+            // Evaluate Biological Segment for Layman Instruction Box
+            let description = "";
+            if (week < 7.0) {
+                description = `Early cellular division phase. Total mass sits very low at ${currentWeight.toFixed(1)} kg, growing slowly by only ${currentVelocity.toFixed(2)} kg each week. Applying structural fertilizer components now sets up cell expansions later.`;
+            } else if (week >= 7.0 && week <= 13.0) {
+                description = `Peak structural expansion zone! Notice how the derivative spikes up near the peak curve. Right now, the palm is driving maximum dry matter into the fruit cluster at ${currentVelocity.toFixed(2)} kg/week. The crop's water consumption and potassium needs are at absolute maximum density.`;
+            } else if (week > 13.0 && week < 17.5) {
+                description = `The growth velocity is falling off (${currentVelocity.toFixed(2)} kg/week) because the fruit bunch has reached near full structural capacity. Instead of growing larger, the tree is switching its biological path from physical growth to oil synthesis.`;
+            } else {
+                description = `Harvest Maturity Target! Physical weight gain has stabilized near flatline zero (${currentVelocity.toFixed(3)} kg/week). The bunch has hit its maximum size ceiling of ~${currentWeight.toFixed(1)} kg. Harvesting execution must occur immediately before loose fruits shed onto the soil floor.`;
+            }
+
+            document.getElementById('out-layman').innerHTML = description;
+        }
+
+        // Handle Manual Reset/Re-animation Trigger Button
+        document.getElementById('resetAnim').addEventListener('click', () => {
+            yieldChart.reset();
+            yieldChart.update();
+        });
+    </script>
+</body>
+</html>

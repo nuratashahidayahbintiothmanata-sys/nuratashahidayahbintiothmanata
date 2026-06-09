@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Integration Calculator</title>
+    <!-- Load Math.js and Chart.js from robust public CDNs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .result-box {
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+        .result-value {
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .error {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+        .graph-wrapper {
+            position: relative;
+            min-height: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Definite Integral Visualizer</h2>
+    <p>A simple, single-file alternative to Desmos for computing and visualizing areas under curves.</p>
+
+    <div class="container">
+        <div class="controls">
+            <div class="input-group">
+                <label for="equation">Function f(x)</label>
+                <input type="text" id="equation" value="x^2 - 1" placeholder="e.g., x^2, sin(x), 2*x + 3">
+                <div id="error-msg" class="error"></div>
+            </div>
+            
+            <div class="input-group">
+                <label for="bound-a">Lower Bound (a)</label>
+                <input type="number" id="bound-a" value="-1" step="0.1">
+            </div>
+
+            <div class="input-group">
+                <label for="bound-b">Upper Bound (b)</label>
+                <input type="number" id="bound-b" value="2" step="0.1">
+            </div>
+
+            <div class="result-box">
+                <div>Numerical Integral:</div>
+                <div class="result-value" id="integral-result">0.0000</div>
+            </div>
+        </div>
+
+        <div class="graph-wrapper">
+            <canvas id="graphCanvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const eqInput = document.getElementById('equation');
+        const boundAInput = document.getElementById('bound-a');
+        const boundBInput = document.getElementById('bound-b');
+        const resultDisplay = document.getElementById('integral-result');
+        const errorDisplay = document.getElementById('error-msg');
+        
+        let chartInstance = null;
+
+        function evaluateFunction(expr, xValue) {
+            return expr.evaluate({ x: xValue });
+        }
+
+        function computeIntegral(expr, a, b, intervals = 200) {
+            const h = (b - a) / intervals;
+            let sum = 0.5 * (evaluateFunction(expr, a) + evaluateFunction(expr, b));
+            
+            for (let i = 1; i < intervals; i++) {
+                sum += evaluateFunction(expr, a + i * h);
+            }
+            return sum * h;
+        }
+
+        function updateGraph() {
+            errorDisplay.textContent = "";
+            const mathStr = eqInput.value;
+            const a = parseFloat(boundAInput.value);
+            const b = parseFloat(boundBInput.value);
+
+            let compiledExpr;
+            try {
+                compiledExpr = math.compile(mathStr);
+                // Test evaluation to catch syntax structural errors early
+                compiledExpr.evaluate({ x: 1 });
+            } catch (err) {
+                errorDisplay.textContent = "Invalid mathematical expression.";
+                return;
+            }
+
+            if (isNaN(a) || isNaN(b)) return;
+
+            // Calculate exact definite integral value
+            const integralValue = computeIntegral(compiledExpr, a, b);
+            resultDisplay.textContent = integralValue.toFixed(5);
+
+            // Generate overall data points for window tracking
+            const points = [];
+            const shadedPoints = [];
+            
+            // Set chart viewing limits contextually around bounds
+            const minX = Math.min(a, -5) - 2;
+            const maxX = Math.max(b, 5) + 2;
+            const step = (maxX - minX) / 150;
+
+            for (let x = minX; x <= maxX; x += step) {
+                try {
+                    const y = evaluateFunction(compiledExpr, x);
+                    if (!isNaN(y) && isFinite(y)) {
+                        points.push({ x: x, y: y });
+                        
+                        // Populate separate array targeting coordinates between bounds
+                        if (x >= a && x <= b) {
+                            shadedPoints.push({ x: x, y: y });
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            // Ensure exact bounding edges are added to smooth out the shaded polygon frame
+            try {
+                shadedPoints.unshift({ x: a, y: evaluateFunction(compiledExpr, a) });
+                shadedPoints.push({ x: b, y: evaluateFunction(compiledExpr, b) });
+            } catch(e) {}
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const ctx = document.getElementById('graphCanvas').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'f(x)',
+                            data: points,
+                            borderColor: '#2563eb',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false
+                        },
+                        {
+                            label: 'Area Region',
+                            data: shadedPoints,
+                            backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                            borderColor: 'transparent',
+                            pointRadius: 0,
+                            fill: 'origin' // Fills directly down or up to the horizontal baseline axis
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: { display: true, text: 'x' }
+                        },
+                        y: {
+                            type: 'linear',
+                            title: { display: true, text: 'y' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Attach lightweight real-time refresh bindings
+        [eqInput, boundAInput, boundBInput].forEach(element => {
+            element.addEventListener('input', updateGraph);
+        });
+
+        // Fire initial mount pipeline
+        updateGraph();
+    </script>
+</body>
+</html>
